@@ -1,9 +1,9 @@
 {
   "platforms": ["apple", "android"],
   "apple": {
-    "modules": ["ContentTransitionAppleModule"]
+    "modules": ["ContentTransitionModule"]
   },
   "android": {
-    "modules": ["expo.modules.contenttransition.ContentTransitionAppleModule"]
+    "modules": ["expo.modules.contenttransition.ContentTransitionModule"]
   }
 }
