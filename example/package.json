@@ -1,0 +1,27 @@
+{
+  "name": "expo-content-transition-example",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@expo/ui": "~57.0.9",
+    "expo": "~57.0.11",
+    "react": "19.2.3",
+    "react-native": "0.86.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "private": true,
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": ".."
+    }
+  }
+}
