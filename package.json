@@ -1,7 +1,7 @@
 {
   "name": "expo-content-transition",
   "version": "0.1.0",
-  "description": "Glyph-level numeric content transitions for React Native, on Android and Apple platforms.",
+  "description": "🚀 Native content transitions for React Native + Expo.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
