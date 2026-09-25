@@ -9,10 +9,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.IntrinsicMeasurable
@@ -138,35 +139,66 @@ private fun Glyph(
   Spacer(
     modifier = Modifier
       .then(GlyphParentData(state))
-      .graphicsLayer {
-        translationX = engine.anchorX + state.x.value - state.bleed
-        translationY = engine.anchorY - state.bleed
-      }
-      .then(if (clipEnabled) Modifier.clipToLineBox(state) else Modifier)
-      .graphicsLayer {
-        val currentScale = state.scale.value
-        scaleX = currentScale
-        scaleY = currentScale
-        alpha = state.alpha.value
-        translationY = state.offset.value * state.travel
-        renderEffect = state.blurEffect(blurEnabled)
-      }
-      .drawBehind {
-        val layout = state.layout ?: return@drawBehind
-        drawText(layout, color = color, topLeft = Offset(state.drawX, state.drawY))
-      }
+      .then(
+        if (clipEnabled) {
+          Modifier.maskedGlyph(state, engine, color, blurEnabled)
+        } else {
+          Modifier.freeGlyph(state, engine, color, blurEnabled)
+        }
+      )
   )
 }
 
-private fun Modifier.clipToLineBox(state: GlyphState): Modifier = drawWithContent {
-  clipRect(
-    left = 0f,
-    top = state.bleed,
-    right = size.width,
-    bottom = state.bleed + state.lineHeight
-  ) {
-    this@drawWithContent.drawContent()
+// The roll and scale are drawn inside the layer so the feather mask stays pinned to the line box,
+// letting one offscreen pass carry the mask, the blur and the fade together.
+private fun Modifier.maskedGlyph(
+  state: GlyphState,
+  engine: GlyphTransitionEngine,
+  color: Color,
+  blurEnabled: Boolean
+): Modifier = graphicsLayer {
+  translationX = engine.anchorX + state.x.value - state.padX
+  translationY = engine.anchorY - state.padY
+  alpha = state.presence
+  compositingStrategy = if (state.isDisplaced) {
+    CompositingStrategy.Offscreen
+  } else {
+    CompositingStrategy.Auto
   }
+  renderEffect = state.blurEffect(blurEnabled, state.scale.value)
+}.drawBehind {
+  val layout = state.layout ?: return@drawBehind
+  if (!state.isDisplaced) {
+    drawText(layout, color = color, topLeft = Offset(state.drawX, state.drawY))
+    return@drawBehind
+  }
+
+  val currentScale = state.scale.value
+  withTransform({
+    translate(top = state.offset.value * state.travel)
+    scale(currentScale, currentScale, pivot = center)
+  }) {
+    drawText(layout, color = color, topLeft = Offset(state.drawX, state.drawY))
+  }
+  state.featherMask?.let { drawRect(brush = it, blendMode = BlendMode.DstIn) }
+}
+
+private fun Modifier.freeGlyph(
+  state: GlyphState,
+  engine: GlyphTransitionEngine,
+  color: Color,
+  blurEnabled: Boolean
+): Modifier = graphicsLayer {
+  val currentScale = state.scale.value
+  translationX = engine.anchorX + state.x.value - state.padX
+  translationY = engine.anchorY - state.padY + state.offset.value * state.travel
+  scaleX = currentScale
+  scaleY = currentScale
+  alpha = state.presence
+  renderEffect = state.blurEffect(blurEnabled)
+}.drawBehind {
+  val layout = state.layout ?: return@drawBehind
+  drawText(layout, color = color, topLeft = Offset(state.drawX, state.drawY))
 }
 
 private class NumericTextMeasurePolicy(private val engine: GlyphTransitionEngine) : MeasurePolicy {

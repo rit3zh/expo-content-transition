@@ -20,9 +20,9 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./build"
   },
-  "include": ["./src"],
+  "include": ["./src", "./web"],
   "exclude": ["**/__mocks__/*", "**/__tests__/*"]
 }

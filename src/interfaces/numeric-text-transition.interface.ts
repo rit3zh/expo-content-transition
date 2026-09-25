@@ -68,12 +68,18 @@ interface INumericTextTransitionProps {
    * in or out is cut off at the edge of the line instead of overlapping whatever sits above or
    * below. The clip is applied after the blur, so softness is preserved right up to the boundary.
    *
+   * @platform android The edge is feathered rather than cut: a glyph rolling past the line box
+   * fades out over a short band just outside it, so blurred glyphs never end on a hard line.
+   * @platform web Feathered the same way as Android.
+   *
    * @default true
    */
   clip?: boolean;
   /**
    * Set to `false` to apply values instantly. The first value is never animated either way, so a
    * freshly mounted component shows its content immediately.
+   *
+   * @platform web Also treated as `false` while the user has `prefers-reduced-motion` enabled.
    *
    * @default true
    */

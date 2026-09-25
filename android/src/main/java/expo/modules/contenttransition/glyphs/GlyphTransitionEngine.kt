@@ -82,6 +82,7 @@ internal class GlyphTransitionEngine {
       glyphs.forEach { it.clearBlur() }
     }
 
+    composePresence()
     contentWidth = line.width
     contentHeight = line.height
     currentText = spec.text
@@ -122,6 +123,7 @@ internal class GlyphTransitionEngine {
       layoutRevision++
     }
 
+    composePresence()
     isRunning = running
     return running
   }
@@ -222,6 +224,25 @@ internal class GlyphTransitionEngine {
       }
 
       state.beginDisappear(countsDown, blurActive)
+    }
+  }
+
+  // A glyph leaving and one arriving in the same slot share one unit of ink. During a burst several
+  // ghosts overlap there, and letting their alphas add up turns the slot into a dark smear.
+  private fun composePresence() {
+    for (state in glyphs) {
+      val own = state.alpha.value.coerceIn(0f, 1f)
+      val slot = state.slot
+      var total = 0f
+      if (slot != null) {
+        for (other in glyphs) {
+          if (other.slot == slot) {
+            total += other.alpha.value.coerceIn(0f, 1f)
+          }
+        }
+      }
+
+      state.presence = if (total > 1f) own / total else own
     }
   }
 

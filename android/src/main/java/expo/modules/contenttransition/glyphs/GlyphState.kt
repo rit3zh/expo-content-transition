@@ -1,10 +1,12 @@
 package expo.modules.contenttransition.glyphs
 
-import android.os.Build
-import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RenderEffect
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.text.TextLayoutResult
+import expo.modules.contenttransition.animation.Spring
 import expo.modules.contenttransition.animation.SpringValue
 import expo.modules.contenttransition.animation.TransitionSprings
 import expo.modules.contenttransition.records.GlyphPlacement
@@ -12,9 +14,6 @@ import expo.modules.contenttransition.records.GlyphSlot
 import expo.modules.contenttransition.records.TransitionShape
 import expo.modules.contenttransition.records.TypesetLine
 import kotlin.math.ceil
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.roundToInt
 
 internal class GlyphState(
   val id: Long,
@@ -29,7 +28,20 @@ internal class GlyphState(
   val offset = SpringValue(springs.offset, 0f, epsilon = 0.002f)
   val scale = SpringValue(springs.glyphScale, 1f, epsilon = 0.002f)
   val alpha = SpringValue(springs.opacity, 1f, epsilon = 0.002f)
-  val blur = SpringValue(springs.blur, 0f, epsilon = 0.05f)
+  val blur = SpringValue(springs.blurIn, 0f, epsilon = 0.05f)
+
+  private val presenceState = mutableFloatStateOf(1f)
+  var presence: Float
+    get() = presenceState.floatValue
+    set(value) {
+      presenceState.floatValue = value
+    }
+
+  private val displacedState = derivedStateOf {
+    offset.value != 0f || scale.value != 1f || blur.value > 0f
+  }
+  val isDisplaced: Boolean
+    get() = displacedState.value
 
   var layout: TextLayoutResult? = null
     private set
@@ -44,27 +56,31 @@ internal class GlyphState(
   var drawY: Float = 0f
     private set
 
-  var bleed: Float = 0f
+  var padX: Float = 0f
+    private set
+  var padY: Float = 0f
     private set
 
-  var lineHeight: Float = 0f
-    private set
   var travel: Float = 0f
+    private set
+
+  var featherMask: Brush? = null
     private set
 
   private var enterScale: Float = TransitionShape.DEFAULT_ENTER_SCALE
   private var appearBlur: Float = 0f
   private var disappearBlur: Float = 0f
-
-  private var cachedBlurRadius: Int = -1
-  private var cachedBlurEffect: RenderEffect? = null
+  private var blurIn: Spring = springs.blurIn
+  private var blurOut: Spring = springs.blurOut
 
   fun adoptSprings(springs: TransitionSprings) {
     x.spring = springs.position
     offset.spring = springs.offset
     scale.spring = springs.glyphScale
     alpha.spring = springs.opacity
-    blur.spring = springs.blur
+    blurIn = springs.blurIn
+    blurOut = springs.blurOut
+    blur.spring = if (disappearing) blurOut else blurIn
   }
 
   fun updateMetrics(
@@ -74,22 +90,27 @@ internal class GlyphState(
     transition: TransitionShape
   ) {
     layout = placement.layout
-    lineHeight = line.height
     travel = line.height * transition.travelRatio
     enterScale = transition.enterScale
 
-    val heightDp = max(line.height / density, 2f)
     val ceiling = transition.maxBlurRadius * density
-    appearBlur = (ln(heightDp) / LOG_3 * density * transition.blurIntensity).coerceAtMost(ceiling)
-    disappearBlur = (ln(heightDp) * density * transition.blurIntensity).coerceAtMost(ceiling)
+    appearBlur = (line.height * APPEAR_BLUR_RATIO * transition.blurIntensity).coerceAtMost(ceiling)
+    disappearBlur = (line.height * DISAPPEAR_BLUR_RATIO * transition.blurIntensity).coerceAtMost(ceiling)
 
-    bleed = ceil(max(appearBlur, disappearBlur) * BLUR_BLEED_FACTOR)
-      .coerceAtLeast(line.height * 0.25f)
+    val feather = ceil(line.height * FEATHER_RATIO)
+    padX = ceil(line.height * OVERHANG_RATIO)
+    padY = feather
 
-    viewportWidth = ceil(placement.advance + bleed * 2f).toInt().coerceAtLeast(1)
-    viewportHeight = ceil(line.height + bleed * 2f).toInt().coerceAtLeast(1)
-    drawX = bleed
-    drawY = bleed + (line.baseline - placement.layout.firstBaseline)
+    viewportWidth = ceil(placement.advance + padX * 2f).toInt().coerceAtLeast(1)
+    viewportHeight = ceil(line.height + padY * 2f).toInt().coerceAtLeast(1)
+    drawX = padX
+    drawY = padY + (line.baseline - placement.layout.firstBaseline)
+    featherMask = featherBrush(
+      height = viewportHeight.toFloat(),
+      top = padY,
+      bottom = padY + line.height,
+      feather = feather
+    )
   }
 
   fun beginAppear(countsDown: Boolean, blurEnabled: Boolean) {
@@ -97,6 +118,7 @@ internal class GlyphState(
     offset.reset(from, 0f)
     scale.reset(enterScale, 1f)
     alpha.reset(0f, 1f)
+    blur.spring = blurIn
     blur.reset(if (blurEnabled) appearBlur else 0f, 0f)
     disappearing = false
   }
@@ -105,6 +127,7 @@ internal class GlyphState(
     offset.retarget(0f)
     scale.retarget(1f)
     alpha.retarget(1f)
+    blur.spring = blurIn
     blur.retarget(0f)
     disappearing = false
   }
@@ -114,6 +137,7 @@ internal class GlyphState(
     offset.retarget(to)
     scale.retarget(enterScale)
     alpha.retarget(0f)
+    blur.spring = blurOut
     blur.retarget(if (blurEnabled) disappearBlur else 0f)
     disappearing = true
   }
@@ -152,27 +176,31 @@ internal class GlyphState(
     return running
   }
 
-  fun blurEffect(enabled: Boolean): RenderEffect? {
-    if (!enabled || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-      return null
-    }
-
-    val radius = blur.value.roundToInt()
-    if (radius <= 0) {
-      return null
-    }
-
-    if (radius != cachedBlurRadius) {
-      cachedBlurRadius = radius
-      cachedBlurEffect = BlurEffect(radius.toFloat(), radius.toFloat(), TileMode.Decal)
-    }
-
-    return cachedBlurEffect
-  }
+  fun blurEffect(enabled: Boolean, visibleScale: Float = 1f): RenderEffect? =
+    if (enabled) GlyphBlur.effect(blur.value * visibleScale) else null
 
   private companion object {
-    const val BLUR_BLEED_FACTOR = 1.5f
+    const val APPEAR_BLUR_RATIO = 0.25f
+    const val DISAPPEAR_BLUR_RATIO = 0.275f
+    const val FEATHER_RATIO = 0.35f
+    const val OVERHANG_RATIO = 0.15f
+    const val FEATHER_STEPS = 6
     const val VISIBILITY_THRESHOLD = 0.01f
-    val LOG_3 = ln(3f)
+
+    fun featherBrush(height: Float, top: Float, bottom: Float, feather: Float): Brush {
+      val stops = ArrayList<Pair<Float, Color>>((FEATHER_STEPS + 1) * 2)
+      for (step in 0..FEATHER_STEPS) {
+        val t = step / FEATHER_STEPS.toFloat()
+        stops.add(((top - feather * (1f - t)) / height) to Color.Black.copy(alpha = smoothstep(t)))
+      }
+      for (step in 0..FEATHER_STEPS) {
+        val t = step / FEATHER_STEPS.toFloat()
+        stops.add(((bottom + feather * t) / height) to Color.Black.copy(alpha = smoothstep(1f - t)))
+      }
+
+      return Brush.verticalGradient(*stops.toTypedArray(), startY = 0f, endY = height)
+    }
+
+    fun smoothstep(t: Float): Float = t * t * (3f - 2f * t)
   }
 }

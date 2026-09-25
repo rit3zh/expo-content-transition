@@ -90,7 +90,7 @@ export default function Counter() {
 | `clip`            | `boolean`        | `true`    | Clips each glyph to its own line box so rolling glyphs don't overlap neighbours      |
 | `animated`        | `boolean`        | `true`    | Set to `false` to apply values instantly; the first value never animates either way  |
 
-`blur` requires Android 12 (API 31); it's silently ignored on lower Android versions and works everywhere on iOS.
+`blur` requires Android 12 (API 31); it's silently ignored on lower Android versions and works everywhere on iOS and web. On Android and web, `clip` feathers the edge instead of cutting it, so glyphs fade out just past the line box rather than ending on a hard line. On web, transitions are skipped when the user has `prefers-reduced-motion` enabled.
 
 ## Full Example
 
@@ -131,7 +131,7 @@ export default function Stopwatch() {
 
 - Expo SDK with a [development build](https://docs.expo.dev/develop/development-builds/introduction/) or bare workflow (Expo Go is **not** supported)
 - iOS and Android — fully native on both
-- Web falls back to a plain `<Text>`, without transitions
+- Web — the same transition engine running on the DOM (needs `react-native-web`, which `npx expo install react-native-web react-dom` sets up)
 
 ## License
 
