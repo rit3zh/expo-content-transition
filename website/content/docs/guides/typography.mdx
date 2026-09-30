@@ -1,0 +1,78 @@
+---
+title: "Typography"
+description: "Fonts, weights, colour, letter spacing and monospaced digits, as props or through style."
+---
+
+NumericText measures and draws its own glyphs, so its typography is set on the component rather than inherited from a parent `Text`. Everything can be passed as a prop or through `style`.
+
+## Size, weight and style
+
+```tsx
+<NumericText value={value} fontSize={48} fontWeight="700" fontStyle="italic" />
+```
+
+`fontSize` is in scale-independent pixels. `fontWeight` takes `'normal'`, `'bold'` or `'100'` to `'900'`; numeric weights need a family that has them.
+
+## Custom fonts
+
+`fontFamily` resolves a family the same way a `Text` does: families loaded with `expo-font`, fonts bundled through `react-native.config.js`, or a platform built-in.
+
+```tsx
+import { useFonts } from 'expo-font';
+
+const [loaded] = useFonts({
+  'SFRounded-Bold': require('./assets/sf-rounded-bold.otf'),
+});
+
+if (!loaded) return null;
+
+return <NumericText value={balance} fontFamily="SFRounded-Bold" fontSize={56} />;
+```
+
+<Callout title="Platform differences">
+  On Android the built-in families are `default`, `sansSerif`, `serif`, `monospace` and `cursive`. On iOS, families are registered names or PostScript names; a custom family exposes each weight as its own face, so `fontWeight` can only add or drop the bold trait on one.
+</Callout>
+
+On the web, a font that finishes loading after the first render is picked up automatically: the glyphs are measured again in the new face, without animating.
+
+## Colour
+
+`color` takes any React Native colour. Without one, NumericText uses the platform's primary label colour.
+
+```tsx
+<NumericText value={change} color={change.startsWith('-') ? '#E5484D' : '#30A46C'} />
+```
+
+## Letter spacing
+
+`letterSpacing` adds space between characters, in points. Tight display type often wants a little negative spacing:
+
+```tsx
+<NumericText value={score} fontSize={96} fontWeight="800" letterSpacing={-2} />
+```
+
+## Monospaced digits
+
+Most fonts have proportional figures: a `1` is narrower than an `8`. When one digit changes width, every glyph after it shifts sideways. `monospacedDigits` switches to tabular figures, so digits that don't change stay exactly where they are.
+
+<Compare prop="monospacedDigits" values={[false, true]} sequence="prices" />
+
+It's the same as `style={{ fontVariant: ['tabular-nums'] }}`. Turn it on for anything that counts.
+
+## Using style
+
+`style` accepts text styles as well as layout ones. `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `letterSpacing`, `color`, `fontVariant` and `textAlign` are read off and applied to the glyphs; everything else styles the view around them.
+
+```tsx
+<NumericText
+  value={value}
+  style={[styles.number, { marginTop: 8 }]}
+  fontWeight="700" // wins over fontWeight in styles.number
+/>
+```
+
+An explicit prop always wins over the same value set through `style`. `textAlign` maps to [`alignment`](/docs/guides/alignment): `left` is `start`, `right` is `end`.
+
+## Props
+
+<PropsTable of="typography" />

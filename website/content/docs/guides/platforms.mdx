@@ -1,0 +1,37 @@
+---
+title: "Platforms"
+description: "What draws the transition on iOS, Android and the web, and where they differ."
+---
+
+The same design runs on every platform: the text is laid out once, glyphs are matched by position, and each one follows a set of springs tuned to the same reference duration. What differs is the renderer, and a few things each platform can or can't do.
+
+## At a glance
+
+| | iOS | Android | Web |
+| --- | --- | --- | --- |
+| Renderer | Core Animation layers | Jetpack Compose | DOM elements, CSS transforms |
+| Frame clock | Display link | Compose frame clock | `requestAnimationFrame` |
+| Blur | Yes | Android 12 (API 31) and later | CSS `filter: blur()` |
+| Clip edge | Cut at the line box | Feathered | Feathered |
+| Reduced motion | Pass `animated` yourself | Pass `animated` yourself | Automatic |
+| Minimum | iOS 16.4 | Expo's minimum | Any current browser |
+
+## iOS
+
+Each glyph is its own Core Animation layer, moved on a display link. Fonts resolve through UIKit, so custom families and PostScript names work. A custom family exposes each weight as a separate face, so `fontWeight` can only add or drop the bold trait on one.
+
+## Android
+
+Glyphs are measured and drawn with Jetpack Compose, inside the native view React Native lays out. Blur is a render effect, available from Android 12; below that the transition plays without it. The clip is feathered, so a blurred glyph rolling out of the line fades over a short band instead of ending on a hard edge.
+
+## Web
+
+Through react-native-web, each glyph is a pair of elements: a window for the clip and the glyph inside it, moved with CSS transforms and blurred with CSS filters. Glyphs are measured with the browser's own text layout, so any web font works; when a font finishes loading, the text is measured again. It turns animations off while `prefers-reduced-motion` is set.
+
+<Callout title="The previews on this site">
+  Every live example here uses that web renderer, taken straight from the package. On iOS and Android the same values produce the same motion, drawn natively.
+</Callout>
+
+## Development builds
+
+The iOS and Android renderers are native code, so they need a [development build](https://docs.expo.dev/develop/development-builds/introduction/); Expo Go can't load them. The web needs nothing beyond `react-native-web` and `react-dom`.

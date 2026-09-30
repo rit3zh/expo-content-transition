@@ -1,0 +1,49 @@
+---
+title: "Alignment and separators"
+description: "How glyphs are matched between values, where the line sits in its box, and the decimal separator."
+---
+
+## How glyphs are matched
+
+Before anything moves, both the old and the new text are split into three parts:
+
+- **Prefix**: everything before the first digit, like `$` or `USD `.
+- **Core**: from the first digit to the last, positioned relative to the decimal separator.
+- **Suffix**: everything after the last digit, like `%` or ` km`.
+
+A glyph in the new text is matched with the glyph in the same place in the old one. In the core, "the same place" is counted from the decimal separator, so the ones digit is always matched with the ones digit, however many digits come before it.
+
+<Example id="currency" code={false} caption="Prefixes, separators and decimals hold their places across currencies." />
+
+That's why `123.45 → 123.46` moves one glyph and `$9.99 → $10.49` grows a digit on the left while the cents stay put. A glyph that's the same in both versions doesn't animate at all; it only glides if its position changes.
+
+Text without any digits is matched from the start instead: the first letter with the first letter, and so on.
+
+## Decimal separator
+
+`decimalSeparator` tells NumericText which character splits the whole and fractional parts. It's `.` by default. For locales that write `1.234,56`, pass `,`:
+
+```tsx
+<NumericText
+  value={new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total)}
+  decimalSeparator=","
+/>
+```
+
+Without it, the `.` grouping separator would be taken as the decimal point and digits would be matched against the wrong neighbours. Only the first character is used. [Formatting values](/docs/guides/formatting#locales) shows how to read the right separator for any locale.
+
+## Alignment in the box
+
+NumericText sizes itself to its text, so alignment only matters once its view is wider than the text: when it has a `width`, stretches in a column, or uses `flex`.
+
+```tsx
+<NumericText value={total} alignment="end" style={{ width: '100%' }} />
+```
+
+`alignment` is `start`, `center` or `end`, and can also be set with `style.textAlign`. When the text changes width, glyphs glide to their new places around the chosen edge.
+
+<Compare prop="alignment" values={["start", "center", "end"]} extra={{ style: { width: "100%" } }} fontSize={40} caption="Each copy fills its column; the value is placed against a different edge." />
+
+## Props
+
+<PropsTable of="content" only={["alignment", "decimalSeparator"]} />

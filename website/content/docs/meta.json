@@ -1,0 +1,16 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "---Getting started---",
+    "index",
+    "installation",
+    "quick-start",
+    "playground",
+    "examples",
+    "---Guides---",
+    "...guides",
+    "---Reference---",
+    "...components",
+    "...api"
+  ]
+}

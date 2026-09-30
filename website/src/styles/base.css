@@ -1,0 +1,133 @@
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	html {
+		@apply font-sans;
+		/* A glyph's blur padding can reach past a narrow screen's edge. Clip, not
+		   hidden, so sticky headers keep working. */
+		overflow-x: clip;
+		-webkit-text-size-adjust: 100%;
+		scroll-padding-top: 5rem;
+		scroll-behavior: smooth;
+	}
+
+	body {
+		/* A glyph's blur padding can reach past a narrow screen's edge. Clip, not
+		   hidden, so sticky headers keep working. */
+		overflow-x: clip;
+		background: var(--background);
+		color: var(--foreground);
+		font-synthesis-weight: none;
+		text-rendering: optimizeLegibility;
+	}
+
+	::selection {
+		background: light-dark(oklch(0 0 0 / 0.1), oklch(1 0 0 / 0.16));
+	}
+
+	/* A long press on a phone shouldn't select a control's label. */
+	button,
+	[role="button"],
+	[role="tab"] {
+		-webkit-touch-callout: none;
+		user-select: none;
+	}
+}
+
+/* The theme toggle drives the switch with a clip-path reveal instead. */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+/* One focus ring for the whole site. Components only place it; its colour
+   and its arrival live here, outside any layer so it wins. It settles in
+   from a little further out rather than stamping on. */
+:focus-visible,
+:focus-visible::after {
+	outline-color: var(--ring);
+}
+
+:focus-visible {
+	animation: focus-ring 240ms var(--ease-out-quart);
+}
+
+@keyframes focus-ring {
+	from {
+		outline-color: transparent;
+		outline-offset: 6px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	:focus-visible {
+		animation: none;
+	}
+}
+
+/* The dotted stage behind live examples and the hero. */
+@utility stage-dots {
+	background-image: radial-gradient(var(--stage-dot) 1px, transparent 1px);
+	background-size: 16px 16px;
+}
+
+/* Scroll areas that show their position some other way. */
+@utility no-scrollbar {
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+/* Entrances. Everything comes into focus from a soft blur while rising a
+   touch; siblings set --i to follow each other in turn.
+   `.blur-in` plays on load (the hero); `[data-reveal]` waits until it
+   scrolls into view (RevealOnScroll sets data-revealed). */
+@keyframes blur-in {
+	from {
+		opacity: 0;
+		filter: blur(6px);
+		transform: translateY(0.25rem);
+	}
+	to {
+		opacity: 1;
+		filter: none;
+		transform: none;
+	}
+}
+
+.blur-in,
+[data-reveal][data-revealed] {
+	/* Starts straight away; siblings with --i follow a short beat apart. */
+	animation: blur-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+[data-reveal]:not([data-revealed]) {
+	opacity: 0;
+}
+
+/* Headline words blur in on their own, so they need a box of their own. */
+.blur-in-word {
+	display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	@keyframes blur-in {
+		from {
+			opacity: 0;
+		}
+	}
+	.blur-in,
+	[data-reveal][data-revealed] {
+		animation-duration: 0.4s;
+		animation-delay: 120ms;
+	}
+}

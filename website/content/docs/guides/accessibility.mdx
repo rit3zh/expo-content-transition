@@ -1,0 +1,49 @@
+---
+title: "Accessibility"
+description: "Reduced motion, screen readers and first renders."
+---
+
+## Reduced motion
+
+On the web, NumericText checks `prefers-reduced-motion` itself and applies values instantly while it's on. On iOS and Android, follow the system setting with `AccessibilityInfo` and pass the result to `animated`:
+
+```tsx title="useReduceMotion.ts"
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo } from 'react-native';
+
+export function useReduceMotion() {
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    return () => subscription.remove();
+  }, []);
+
+  return reduceMotion;
+}
+```
+
+```tsx
+const reduceMotion = useReduceMotion();
+
+<NumericText value={balance} animated={!reduceMotion} />
+```
+
+With `animated={false}` values still change; they just appear in place.
+
+## Screen readers
+
+On the web, NumericText is announced as an image labelled with its current value. On iOS and Android it doesn't set an accessibility label of its own, so give the value a label, and any context it needs, on a surrounding view:
+
+```tsx
+<View accessible accessibilityRole="text" accessibilityLabel={`Balance ${formatted}`}>
+  <NumericText value={formatted} fontSize={48} />
+</View>
+```
+
+For values that change while someone is listening, like a timer, avoid announcing every tick. Label the view with the value only when it matters, or describe what it is ("Time remaining") and let people ask for the value.
+
+## First renders
+
+The first value is never animated. A screen that mounts with data already loaded shows it straight away instead of rolling everything in, and only later changes move. If you want an entrance, mount NumericText with a placeholder, such as `'0'` or `'--'`, and set the real value once it's ready.

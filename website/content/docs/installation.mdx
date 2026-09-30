@@ -1,0 +1,99 @@
+---
+title: "Installation"
+description: "Add expo-content-transition to an Expo or React Native project and build it into your app."
+---
+
+## Requirements
+
+- An Expo project using a [development build](https://docs.expo.dev/develop/development-builds/introduction/), or a bare React Native app with Expo Modules installed.
+- iOS 16.4 or later. On Android, blur needs Android 12 (API 31); older versions get the same transition without it.
+- For the web, `react-native-web` and `react-dom`, which Expo's web support already uses.
+
+<Callout type="warn" title="Expo Go can't load it">
+  Expo Go only contains the native code that ships with it. NumericText draws its transitions with its own native views, so it needs a development build.
+</Callout>
+
+## Install
+
+<Steps>
+<Step>
+
+### Add the package
+
+`expo install` picks versions that match your SDK. `@expo/ui` is a peer dependency the Android side builds against.
+
+<CommandTabs
+  groupId="package-manager"
+  commands={{
+    npx: "npx expo install expo-content-transition @expo/ui",
+    bun: "bunx expo install expo-content-transition @expo/ui",
+    pnpm: "pnpm dlx expo install expo-content-transition @expo/ui",
+    yarn: "yarn dlx expo install expo-content-transition @expo/ui",
+  }}
+/>
+
+</Step>
+<Step>
+
+### Rebuild the native app
+
+The package contains native code, so the app has to be compiled again. There is no config plugin to add.
+
+<CommandTabs
+  label="Platform"
+  commands={{
+    iOS: "npx expo run:ios",
+    Android: "npx expo run:android",
+  }}
+/>
+
+For EAS, start a new development build with `eas build --profile development`. In a bare app, run `npx pod-install` before building for iOS.
+
+</Step>
+<Step>
+
+### Add web support (optional)
+
+On the web, NumericText renders with the DOM, so it only needs Expo's usual web dependencies:
+
+```bash
+npx expo install react-native-web react-dom
+```
+
+</Step>
+<Step>
+
+### Render a value
+
+```tsx title="App.tsx"
+import { NumericText } from 'expo-content-transition';
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Pressable onPress={() => setCount((n) => n + 1)}>
+        <NumericText value={count} fontSize={64} fontWeight="600" monospacedDigits />
+      </Pressable>
+    </View>
+  );
+}
+```
+
+Tap the number and it rolls up.
+
+</Step>
+</Steps>
+
+## Troubleshooting
+
+**An error that the `ContentTransition` module or its `NumericTextView` can't be found** means the running binary was built before the package was added. Rebuild with `npx expo run:ios` or `npx expo run:android`, or create a new development build.
+
+**Nothing animates on the first render.** That's intended: the first value is never animated, so a freshly mounted component shows its content straight away. Transitions start from the first change.
+
+**No blur on an Android device.** Blur needs Android 12 (API 31). Older versions skip it and keep the rest of the transition.
+
+**Digits shift sideways when a neighbour changes.** Most fonts have proportional figures. Turn on [`monospacedDigits`](/docs/guides/typography#monospaced-digits).

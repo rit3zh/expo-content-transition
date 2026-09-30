@@ -1,0 +1,103 @@
+/* `dark:` follows the toggle, and the system setting when nothing is saved. */
+@custom-variant dark {
+	&:where([data-theme="dark"], [data-theme="dark"] *) {
+		@slot;
+	}
+	@media (prefers-color-scheme: dark) {
+		&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+			@slot;
+		}
+	}
+}
+
+/* Monochrome on purpose: the motion is the only thing that should catch the eye. */
+:root {
+	color-scheme: light dark;
+
+	--background: light-dark(#ffffff, #121213);
+	--foreground: light-dark(#171717, #ededed);
+	--surface: light-dark(#f5f5f5, #19191b);
+	/* Barely there: structure comes from surfaces and space, not lines. */
+	--border: light-dark(oklch(0 0 0 / 0.055), oklch(1 0 0 / 0.055));
+	--muted-foreground: light-dark(#6b6b6b, #8f8f8f);
+	--muted: var(--surface);
+
+	--card: light-dark(#ffffff, #161617);
+	--card-foreground: var(--foreground);
+	--popover: light-dark(#ffffff, #1d1d1f);
+	--popover-foreground: var(--foreground);
+	--primary: var(--foreground);
+	--primary-foreground: var(--background);
+	--secondary: var(--surface);
+	--secondary-foreground: var(--foreground);
+	--accent: light-dark(#ededed, #242426);
+	--accent-foreground: var(--foreground);
+	/* Deep enough in light mode that white text on it clears 4.5:1. */
+	--destructive: light-dark(#ce2c31, #e5484d);
+	--input: var(--border);
+	/* Keyboard focus: the text colour at about a third, still over 3:1. */
+	--ring: light-dark(oklch(0.2 0 0 / 0.38), oklch(0.95 0 0 / 0.45));
+
+	--code: light-dark(#f7f7f7, #171719);
+	--stage: light-dark(#f5f5f5, #171719);
+	--stage-dot: light-dark(oklch(0 0 0 / 0.09), oklch(1 0 0 / 0.07));
+
+	--radius: 0.75rem;
+
+	--shadow-raised:
+		0 0 0 1px light-dark(oklch(0 0 0 / 0.06), oklch(1 0 0 / 0.08)),
+		0 1px 2px light-dark(oklch(0 0 0 / 0.06), oklch(0 0 0 / 0.4)),
+		0 6px 16px -6px light-dark(oklch(0 0 0 / 0.12), oklch(0 0 0 / 0.6));
+	--shadow-float:
+		0 0 0 1px light-dark(oklch(0 0 0 / 0.06), oklch(1 0 0 / 0.08)),
+		0 24px 60px -12px light-dark(oklch(0 0 0 / 0.25), oklch(0 0 0 / 0.7));
+}
+
+:root[data-theme="light"] {
+	color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-surface: var(--surface);
+	--color-border: var(--border);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-code: var(--code);
+	--color-stage: var(--stage);
+
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
+	--font-heading: var(--font-geist-sans);
+
+	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-md: calc(var(--radius) * 0.8);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-2xl: calc(var(--radius) * 1.8);
+
+	--shadow-raised: var(--shadow-raised);
+	--shadow-float: var(--shadow-float);
+
+	--ease-out-quart: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}

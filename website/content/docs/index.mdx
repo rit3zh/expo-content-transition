@@ -1,0 +1,62 @@
+---
+title: "Introduction"
+description: "Text whose glyphs roll, scale and blur individually when the value changes. Native on iOS and Android, DOM-based on the web."
+---
+
+<Example id="currency" code={false} />
+
+expo-content-transition is one component, `NumericText`. Give it a value, and when the value changes it lines the old and new text up glyph by glyph. Only the characters that differ move: each one rolls, scales and blurs on its own spring while its neighbours hold still.
+
+It's made for the text in an app that changes while someone is looking at it: balances, prices, counters, timers, scores, progress and status labels.
+
+<Callout title="Every preview here is live">
+  The examples on this site run the package's own web renderer in your browser, so what you see is exactly what `NumericText` does on the web. iOS and Android run the same diff with the same springs, drawn natively.
+</Callout>
+
+## At a glance
+
+- **Per-glyph motion.** Each changed character rolls, scales and blurs on its own, staggered slightly so a change reads left to right.
+- **Smart alignment.** Digits line up around the [decimal separator](/docs/guides/alignment), so `123.45 → 123.46` moves one digit and `$9.99 → $10.49` grows one.
+- **Direction from the value.** Bigger numbers roll up, smaller ones roll down. [Force a direction](/docs/guides/transitions#direction) for clocks and countdowns.
+- **Tunable.** `duration`, `bounce`, `enterScale`, `travel` and [blur](/docs/guides/blur-and-clipping) shape the motion without losing its character.
+- **Native.** Core Animation on iOS, Jetpack Compose on Android, the DOM on the web. Only the new string crosses the bridge.
+- **Typography.** Custom fonts, weights, letter spacing and [monospaced digits](/docs/guides/typography#monospaced-digits), as props or through `style`.
+
+## A first look
+
+```tsx title="Balance.tsx"
+import { NumericText } from 'expo-content-transition';
+
+export function Balance({ amount }: { amount: number }) {
+  return <NumericText value={amount.toFixed(2)} fontSize={48} fontWeight="600" monospacedDigits />;
+}
+```
+
+`NumericText` sizes itself to its text, like a `Text`. Change `amount` and only the digits that differ move.
+
+## Platform support
+
+| Platform | Renderer | Notes |
+| --- | --- | --- |
+| iOS | Core Animation | iOS 16.4 and later |
+| Android | Jetpack Compose | Blur needs Android 12 (API 31) |
+| Web | DOM, through react-native-web | Honours `prefers-reduced-motion` |
+
+The package contains native code, so it runs in a [development build](https://docs.expo.dev/develop/development-builds/introduction/), not in Expo Go.
+
+## Next steps
+
+<Cards>
+  <Card href="/docs/installation" title="Installation">
+    Add the package and create a development build.
+  </Card>
+  <Card href="/docs/quick-start" title="Quick start">
+    A value on screen, formatted, then tuned.
+  </Card>
+  <Card href="/docs/playground" title="Playground">
+    Every prop, live, with the code to match.
+  </Card>
+  <Card href="/docs/examples" title="Examples">
+    Wallets, tickers, timers and labels to copy.
+  </Card>
+</Cards>

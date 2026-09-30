@@ -1,0 +1,53 @@
+---
+title: "NumericText"
+description: "Text whose glyphs transition individually when the value changes."
+---
+
+```tsx
+import { NumericText } from 'expo-content-transition';
+```
+
+`NumericText` renders a line of text and animates every change to it. It sizes itself to its content like a `Text`, and takes its typography as props or through `style`.
+
+<Example id="counter" code={false} />
+
+```tsx
+<NumericText
+  value={count}
+  fontSize={64}
+  fontWeight="600"
+  monospacedDigits
+  direction="auto"
+  duration={420}
+  bounce={0.46}
+/>
+```
+
+## Content
+
+The text itself, how it's matched between values, and the view around it. See [Alignment and separators](/docs/guides/alignment).
+
+<PropsTable of="content" />
+
+## Typography
+
+How the glyphs are drawn. Each can also be set through `style`; an explicit prop wins. See [Typography](/docs/guides/typography).
+
+<PropsTable of="typography" />
+
+## Transition
+
+How a change moves. See [Transitions](/docs/guides/transitions) and [Blur and clipping](/docs/guides/blur-and-clipping), or try them all in the [playground](/docs/playground).
+
+<PropsTable of="transition" />
+
+## Behaviour
+
+- **First render.** The first value is shown without animating. Every later change animates, unless `animated` is `false`.
+- **Rapid changes.** A change that arrives mid-transition retargets the glyphs already moving; nothing queues up or jumps.
+- **Sizing.** The view reports the size of its current text. Give it a width, or let it stretch, to [align](/docs/guides/alignment#alignment-in-the-box) the text inside.
+- **Memoised.** `NumericText` is wrapped in `React.memo`, and only the string crosses to the native side when it changes.
+
+## Types
+
+`NumericText`'s props are exported as `INumericText`, with the typography and transition groups available on their own. See [Types](/docs/api/types).

@@ -1,0 +1,46 @@
+---
+title: "Blur and clipping"
+description: "Motion blur that follows each glyph's progress, and a clip that keeps rolling glyphs inside the line."
+---
+
+## Blur
+
+With `blur` on, which is the default, each glyph blurs in proportion to how far through its own transition it is: sharp when it's settled, softest halfway. A glyph that's leaving blurs harder than one that's arriving, so the new value always reads first.
+
+<Compare prop="blur" values={[false, true]} />
+
+<Callout title="Android 12 and later">
+  Blur on Android is a render effect, which the platform added in Android 12 (API 31). On older versions it's skipped and the rest of the transition plays as usual.
+</Callout>
+
+### Intensity
+
+`blurIntensity` scales the blur, from `0` to `8`, with `1` as the default. The radii come from the line height, so the same intensity looks the same at any size. `0` is the same as `blur={false}`.
+
+<Compare prop="blurIntensity" values={[0.5, 1, 3]} />
+
+### A ceiling
+
+`maxBlurRadius` caps the blur radius in density-independent pixels. It lets you push `blurIntensity` for small text without large text turning to soup, and it caps what a single transition can cost.
+
+```tsx
+<NumericText value={value} fontSize={96} blurIntensity={3} maxBlurRadius={12} />
+```
+
+<Callout title="Blur is the costly part">
+  On every platform, blur is the most expensive part of a transition. If many glyphs change at once, or many NumericTexts change together, set a `maxBlurRadius`.
+</Callout>
+
+## Clipping
+
+`clip`, on by default, gives each glyph a window the height of the measured line, so a glyph rolling in or out is cut off at the edge of the line instead of overlapping whatever sits above or below it. The clip is applied after the blur, so the softness is kept right up to the edge.
+
+<Compare prop="clip" values={[true, false]} extra={{ travel: 1, blur: false }} />
+
+With a large `travel`, turning the clip off lets glyphs sweep through the space around the text. Leave room above and below if you do.
+
+On Android and the web the edge is feathered rather than cut: a glyph rolling past the line box fades out over a short band just outside it, so blurred glyphs never end on a hard line.
+
+## Props
+
+<PropsTable of="transition" only={["blur", "blurIntensity", "maxBlurRadius", "clip"]} />

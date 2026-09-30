@@ -1,0 +1,58 @@
+---
+title: "Transitions"
+description: "How a change moves: direction, duration, bounce, scale and travel."
+---
+
+When `value` changes, NumericText compares the old and new text and works out which glyphs stay, which leave and which arrive. Glyphs that stay glide to their new position; the others roll out and in, scaling and blurring as they go. A small stagger moves through them from left to right.
+
+Every comparison on this page shows one value changing, several times over, with one prop set differently in each copy.
+
+## Direction
+
+`direction="auto"` compares the old and new numbers and rolls up when the value grows, down when it shrinks. Force `up` or `down` for text that doesn't read as a number, or for a countdown or clock that should always go one way.
+
+<Compare prop="direction" values={["auto", "up", "down"]} />
+
+A clock is the classic case: `23:59:59` to `00:00:00` is a smaller number, but time moved forward.
+
+```tsx
+<NumericText value={time} direction="up" monospacedDigits />
+```
+
+## Duration
+
+`duration` is the nominal length of a transition in milliseconds, `420` by default. It scales every internal spring together, so a slower transition keeps the same character instead of just being stretched.
+
+<Compare prop="duration" values={[200, 420, 1000]} interval={2200} />
+
+Keep it short for values that update often, like a percentage during a download, so a new change never has to wait for the last one.
+
+## Bounce
+
+`bounce` is how far the vertical roll overshoots before it settles, from `0` to `0.95`. `0` arrives dead straight. Only the roll bounces: a wobbling opacity or position would just look broken.
+
+<Compare prop="bounce" values={[0, 0.46, 0.9]} />
+
+## Enter scale
+
+`enterScale` is the size a glyph starts at when it arrives, and shrinks to when it leaves. `1` turns the scale off and leaves a pure roll.
+
+<Compare prop="enterScale" values={[1, 0.4, 0]} />
+
+## Travel
+
+`travel` is how far a glyph rolls, as a fraction of the line height. Larger values read as a faster-moving ticker; `0` removes the vertical movement and leaves a scale and a fade.
+
+<Compare prop="travel" values={[0, 0.333, 1]} />
+
+## Turning it off
+
+`animated={false}` applies every value instantly. The first value is never animated either way, so a freshly mounted component shows its content straight away rather than rolling in.
+
+```tsx
+<NumericText value={balance} animated={!isRefreshing} />
+```
+
+## Props
+
+<PropsTable of="transition" only={["direction", "duration", "bounce", "enterScale", "travel", "animated"]} />

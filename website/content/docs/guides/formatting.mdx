@@ -1,0 +1,74 @@
+---
+title: "Formatting values"
+description: "Turn numbers into the text you want to show: decimals, currency, locales, compact notation and units."
+---
+
+`value` is displayed exactly as it's given. A `number` goes through `String()`, and a string is shown character for character. Formatting is up to you, and anything you format animates: symbols, separators, signs and units are glyphs like any other.
+
+## Numbers as strings
+
+`String()` drops trailing zeros, so `1.10` shows as `1.1`, and a price that moves from `1.10` to `1.15` changes length. Fix the number of decimals with `toFixed` when they should always be there:
+
+```tsx
+<NumericText value={price.toFixed(2)} monospacedDigits />
+```
+
+## Currency
+
+`Intl.NumberFormat` does the grouping, the symbol and its placement:
+
+```tsx
+const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+<NumericText value={usd.format(balance)} fontSize={48} fontWeight="700" monospacedDigits />
+```
+
+<Example id="currency" />
+
+## Locales
+
+Many locales use a comma for the decimal point and a dot or space for grouping. Tell NumericText which character is the decimal separator, or it will line digits up around the wrong one. Reading it from the formatter keeps the two in agreement:
+
+```tsx
+function decimalSeparator(locale: string) {
+  return new Intl.NumberFormat(locale).formatToParts(1.1).find((part) => part.type === 'decimal')?.value ?? '.';
+}
+
+const format = new Intl.NumberFormat(locale, { style: 'currency', currency });
+
+<NumericText value={format.format(total)} decimalSeparator={decimalSeparator(locale)} />
+```
+
+## Compact numbers
+
+Compact notation turns `1,480` into `1.5K`. When a value crosses a boundary, like `999` to `1K`, the whole string changes shape and every glyph transitions:
+
+<Example id="likes" />
+
+## Percentages and units
+
+Suffixes such as `%`, ` km` or ` bpm` stay put while the digits in front of them change. For values that update many times a second, a shorter `duration` keeps the motion from lagging behind:
+
+<Example id="progress" />
+
+## Signs
+
+Put the sign in the string. A change from `+1.2%` to `-0.4%` transitions the sign like any other glyph. Using the typographic minus (`−`, U+2212) keeps it the same width as `+` in most fonts, and NumericText reads it as a negative number when working out the direction.
+
+```tsx
+const signed = `${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(2)}%`;
+```
+
+## Times
+
+Pad times so their length doesn't change, and force the direction, since a clock's digits don't always grow as time goes forward:
+
+<Example id="clock" />
+
+## Words
+
+Any string works. Text with no digits is matched from its first letter, so a label changes in place:
+
+```tsx
+<NumericText value={isSaving ? 'Saving' : 'Saved'} direction="up" />
+```

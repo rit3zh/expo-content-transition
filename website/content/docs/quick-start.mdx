@@ -1,0 +1,70 @@
+---
+title: "Quick start"
+description: "A value on screen, formatted, tuned and styled, one idea at a time."
+---
+
+Every example below runs live on the page. Each step adds one idea.
+
+## Show a value
+
+`NumericText` takes a `value` and sizes itself to it. Keep the value in state and change it like any other prop:
+
+<Example id="counter" />
+
+The first value appears as is; from then on, every change animates. `monospacedDigits` gives every digit the same width, so the ones that don't change never shift sideways.
+
+## Format it first
+
+`value` is shown exactly as given (numbers go through `String()`), so format it however the number should read. Currency symbols, group separators and units animate like any other glyph:
+
+```tsx
+const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+<NumericText value={price.format(total)} fontSize={40} fontWeight="700" monospacedDigits />
+```
+
+Digits line up around the decimal separator, so `$9.99` becoming `$10.49` grows a digit on the left instead of reshuffling the line. See [Formatting values](/docs/guides/formatting) for locales and compact numbers.
+
+## Pick a direction
+
+By default glyphs roll up when the number grows and down when it shrinks. A countdown should always tick the same way, whatever the digits say:
+
+<Example id="countdown" />
+
+## Tune the motion
+
+`duration`, `bounce`, `enterScale` and `travel` shape the transition. Here the same values change three times over, with different amounts of `bounce`:
+
+<Compare prop="bounce" values={[0, 0.46, 0.9]} />
+
+Try every prop together in the [playground](/docs/playground), or read [Transitions](/docs/guides/transitions) for what each one does.
+
+## Words work too
+
+Text without digits swaps glyph by glyph, lined up from the start. Force the direction, since there's no number to compare:
+
+<Example id="status" />
+
+## Style it like text
+
+Typography can be passed as props or through `style`, the way you'd style a `Text`. Layout styles go to the view around the glyphs:
+
+```tsx
+<NumericText
+  value={score}
+  style={{ fontSize: 34, fontWeight: '800', color: '#111', marginTop: 12 }}
+/>
+```
+
+An explicit prop wins over the same value in `style`. See [Typography](/docs/guides/typography).
+
+## Where to go next
+
+<Cards>
+  <Card href="/docs/playground" title="Playground">
+    Every prop, live, with the code to paste.
+  </Card>
+  <Card href="/docs/examples" title="Examples">
+    Wallets, tickers, timers and more.
+  </Card>
+</Cards>

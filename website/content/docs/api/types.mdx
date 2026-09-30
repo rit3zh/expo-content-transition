@@ -1,0 +1,98 @@
+---
+title: "Types"
+description: "The TypeScript types expo-content-transition exports."
+---
+
+Everything is exported from the package root.
+
+```tsx
+import type {
+  INumericText,
+  NumericTextTypographyProps,
+  NumericTextTransitionProps,
+  NumericTextAlignment,
+  NumericTextDirection,
+  NumericTextFontWeight,
+  NumericTextFontStyle,
+} from 'expo-content-transition';
+```
+
+## Props
+
+### `INumericText`
+
+The props of `NumericText`: the content props, plus both groups below.
+
+```tsx
+interface INumericText extends NumericTextTypographyProps, NumericTextTransitionProps {
+  value: string | number;
+  alignment?: NumericTextAlignment;
+  decimalSeparator?: string;
+  style?: StyleProp<TextStyle>;
+}
+```
+
+### `NumericTextTypographyProps`
+
+Also exported as `INumericTextTypographyProps`.
+
+```tsx
+interface NumericTextTypographyProps {
+  fontSize?: number;
+  fontWeight?: NumericTextFontWeight;
+  fontStyle?: NumericTextFontStyle;
+  fontFamily?: string;
+  letterSpacing?: number;
+  color?: string;
+  monospacedDigits?: boolean;
+}
+```
+
+### `NumericTextTransitionProps`
+
+Also exported as `INumericTextTransitionProps`.
+
+```tsx
+interface NumericTextTransitionProps {
+  direction?: NumericTextDirection;
+  duration?: number;
+  bounce?: number;
+  enterScale?: number;
+  travel?: number;
+  blur?: boolean;
+  blurIntensity?: number;
+  maxBlurRadius?: number;
+  clip?: boolean;
+  animated?: boolean;
+}
+```
+
+Useful for wrapping NumericText in your own component with house defaults:
+
+```tsx title="Amount.tsx"
+import { NumericText, type NumericTextTransitionProps } from 'expo-content-transition';
+
+export function Amount({ value, ...transition }: { value: number } & NumericTextTransitionProps) {
+  return (
+    <NumericText
+      value={value.toFixed(2)}
+      fontSize={32}
+      fontWeight="600"
+      monospacedDigits
+      bounce={0.3}
+      {...transition}
+    />
+  );
+}
+```
+
+## Unions
+
+| Type | Values |
+| --- | --- |
+| `NumericTextAlignment` | `'start' \| 'center' \| 'end'` |
+| `NumericTextDirection` | `'auto' \| 'up' \| 'down'` |
+| `NumericTextFontStyle` | `'normal' \| 'italic'` |
+| `NumericTextFontWeight` | `'normal' \| 'bold' \| '100'` … `'900'` |
+
+Each is also exported with a `T` prefix, for example `TNumericTextDirection`.
