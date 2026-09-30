@@ -1,7 +1,7 @@
 {
   "name": "expo-content-transition",
-  "version": "0.1.6",
-  "description": "\ud83d\ude80 Native content transitions for React Native + Expo.",
+  "version": "0.1.7",
+  "description": "🚀 Native content transitions for React Native + Expo.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [
